@@ -371,21 +371,6 @@ spec:
     port: 80
     protocol: TCP
     targetPort: http
-  - appProtocol: tcp
-    name: a-tcp
-    port: 38881
-    protocol: TCP
-    targetPort: 38881
-  - appProtocol: tcp
-    name: b-tcp
-    port: 38882
-    protocol: TCP
-    targetPort: 38882
-  - appProtocol: tcp
-    name: c-tcp
-    port: 38883
-    protocol: TCP
-    targetPort: 38883
   - appProtocol: https
     name: https
     port: 443
@@ -458,7 +443,6 @@ spec:
         - --controller-class=k8s.io/ingress-nginx
         - --ingress-class=nginx
         - --configmap=$(POD_NAMESPACE)/ingress-nginx-controller
-        - '--tcp-services-configmap=ingress-nginx/tcp-services'
         - --enable-ssl-passthrough
         - --validating-webhook=:8443
         - --validating-webhook-certificate=/usr/local/certificates/cert

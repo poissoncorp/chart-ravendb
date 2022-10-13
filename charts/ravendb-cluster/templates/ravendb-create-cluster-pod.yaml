@@ -19,7 +19,8 @@ spec:
         secretName: ravendb-setup-package
   containers:
   - name: main
-    image: "ubuntu:latest" # todo: use lighter distro to run the scripts
+    image: "ravendb/ravendb:{{$.Values.ravenImageTag}}"
+    imagePullPolicy: {{ $.Values.imagePullPolicy }}
     command: ["/bin/bash"]
     args: ["/ravendb/scripts/create-cluster.sh"]
     volumeMounts:

@@ -1,8 +1,8 @@
-{{- range .Values.nodes }}
+{{- range .Values.nodeTags }}
 apiVersion: v1
 kind: Service
 metadata:
-  name: "ravendb-{{ .nodeTag | lower }}"
+  name: "ravendb-{{ . | lower }}"
   namespace: ravendb
   labels:
     app.kubernetes.io/name: ravendb
@@ -17,6 +17,6 @@ spec:
     protocol: TCP
     name: tcp
   selector:
-    nodeTag: {{.nodeTag}}
+    nodeTag: {{ . }}
 ---
 {{- end }}

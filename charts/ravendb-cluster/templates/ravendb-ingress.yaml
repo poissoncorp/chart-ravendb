@@ -16,26 +16,26 @@ metadata:
 spec:
   ingressClassName: {{ .Values.ingressClassName }}
   rules:
-    {{- range .Values.nodes }}
-    - host: "{{ lower .nodeTag }}.{{$.Values.domain}}"
+    {{- range .Values.nodeTags }}
+    - host: "{{ lower . }}.{{$.Values.domain}}"
       http:
         paths:
           - pathType: Prefix
             path: /
             backend:
               service: 
-                name: ravendb-{{.nodeTag | lower}}
+                name: ravendb-{{ . | lower}}
                 port:
                   number: 443
 
-    - host: "{{ lower .nodeTag}}-tcp.{{$.Values.domain}}"
+    - host: "{{ lower . }}-tcp.{{$.Values.domain}}"
       http:
         paths:
           - pathType: Prefix
             path: /
             backend:
               service: 
-                name: ravendb-{{.nodeTag | lower }}
+                name: ravendb-{{ . | lower }}
                 port:
                   number: 38888
     {{- end }}

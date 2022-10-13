@@ -1,8 +1,8 @@
-{{- range .Values.nodes }}
+{{- range .Values.nodeTags }}
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: "ravendb-{{.nodeTag | lower }}"
+  name: "ravendb-{{ . | lower }}"
   namespace: ravendb
   annotations: 
     ingress.kubernetes.io/ssl-passthrough: "true"
@@ -11,18 +11,18 @@ metadata:
     app.kubernetes.io/managed-by: {{ $.Release.Service }}
     app.kubernetes.io/instance: {{ $.Release.Name }}
     helm.sh/chart: "{{ $.Chart.Name }}-{{ $.Chart.Version | replace "+" "_" }}"
-    nodeTag: "{{.nodeTag}}"
+    nodeTag: "{{.}}"
 spec:
   selector:
     matchLabels:
-      nodeTag: "{{.nodeTag}}"
-  serviceName: "ravendb-{{.nodeTag | lower }}"
+      nodeTag: "{{.}}"
+  serviceName: "ravendb-{{ . | lower }}"
   replicas: 1
   template:
     metadata:
       namespace: ravendb
       labels:
-        nodeTag: "{{.nodeTag}}"
+        nodeTag: "{{.}}"
     spec:
       dnsPolicy: Default
       serviceAccountName: modify-config
@@ -65,7 +65,7 @@ spec:
 
         {{ if eq $.Values.setupMode "LetsEncrypt" }}
         - name: RAVEN_Security_Certificate_LetsEncrypt_Email
-          value: {{ $.Values.letsEncryptEmail }}
+          value: {{ $.Values.email }}
 
         - name: RAVEN_Security_Certificate_Change_Exec
           value: /ravendb/scripts/update-cert.sh
@@ -83,9 +83,9 @@ spec:
           value: "tcp://0.0.0.0:38888"
 
         - name: RAVEN_PublicServerUrl
-          value: "https://{{ .nodeTag | lower }}.{{$.Values.domain}}"
+          value: "https://{{ . | lower }}.{{$.Values.domain}}"
         - name: RAVEN_PublicServerUrl_Tcp
-          value: "tcp://{{ .nodeTag | lower }}-tcp.{{$.Values.domain}}:{{.publicTcpPort}}"
+          value: "tcp://{{ . | lower }}-tcp.{{$.Values.domain}}:443"
 
         # The environmental values defined in the values.yaml should be listed below this comment while debugging
         {{ if ( $.Values.environment )}}
