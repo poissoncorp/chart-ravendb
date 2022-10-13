@@ -1,6 +1,6 @@
 # customizable
 storageSize: 5Gi
-ravenImageTag: latest
+ravenImageTag: 5.3-ubuntu-latest
 imagePullPolicy: IfNotPresent
 ingressClassName: nginx
 
