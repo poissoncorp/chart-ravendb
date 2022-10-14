@@ -4,51 +4,56 @@
 ## Overview
 This Helm chart provides all necessary components for the secured RavenDB cluster. It's very easy to deploy & manage your own RavenDB cluster by using it. You only need a RavenDB license and the *setup package*.
 
+## Usage
 
-## Installation
-*To get mentioned files read the section below*
+### Prerequisites
 
-**via [artifacthub.io](https://artifacthub.io/packages/helm/ravendb-cluster/ravendb)**
+- [RavenDB License](#getting-the-license)
 
-`helm repo add ravendb https://ravendb.github.io/helm-charts/charts`
+- [RavenDB Setup Package](#creating-a-ravendb-setup-package)
 
-`helm install [your-custom-name] ravendb/ravendb-cluster --set-file package=[setup/package/path] -f [values/yaml/path]`
+- [Running an ingress controller](#set-up-your-ingress-controller)
 
-or by *cloning* the repo
+If you have these, you can jump straight to [Installation](#installation).
 
-`git clone https://github.com/ravendb/helm-charts.git`
+#### Getting the license
 
-`helm install [name] [chart path] --set-file package=[setup/package/path] -f [values/yaml/path]`
+To run this Helm chart you need to acquire RavenDB on-premise license. You can obtain one on https://ravendb.net. Free or Developer license (not for production use) would do as well.
 
-the chart is located under the `charts/ravendb-cluster` directory
+#### Creating a RavenDB Setup Package
 
----
-
-## Pre-requirements
-- RavenDB License (obtained via https://ravendb.net - also works with the free developer license)
-- The [rvn](https://github.com/ravendb/ravendb/tree/v5.4/tools/rvn) - it generates proper *setup package* and *values.yaml* for you 
-
-- Running ingress controller (*see the content below*)
-
- *Alternativelly you could get package via the setup wizard or write values.yaml by yourself, but we highly recommend using the script.*
+To create RavenDB Setup Package you can use [RavenDB Setup Wizard](https://ravendb.net/docs/article-page/latest/csharp/start/installation/setup-wizard) or `rvn` command line utility. The [rvn](https://github.com/ravendb/ravendb/tree/v5.4/tools/rvn) utility generates proper *Setup Package* and *values.yaml* for you.
+Alternatively you could get package via the Setup Wizard or prepare *values.yaml* yourself, but we highly recommend using the `rvn` utility.
 
 Run [rvn](https://github.com/ravendb/ravendb/tree/v5.4/tools/rvn) to generate helm **values.yaml** and a **setup package**:
 
-`rvn create-setup-package -m=[setup-mode] -s="[path/to/create-setup-package-setup.json]" -o=[package output path] --generate-helm-values [yaml output path] `
+```bash
 
-----
-You might want to customize generated `values.yaml`, you can...
-- Enter how big should be `storageSize` on each node.
+# Scaffold rvn's setup.json file (optional)
+rvn init-setup-params -m=[setup-mode] -o ./setup.json
+
+# Create RavenDB Setup Package
+rvn create-setup-package -m=[setup-mode] -s="[path/to/create-setup-package-setup.json]" -o=[package output path] --generate-helm-values [yaml output path]
+
+```
+
+If in doubt try `rvn [command] --help`.
+
+##### Customize Helm values.yaml file
+
+You might want to customize generated `values.yaml`, you can:
+
+- Define `storageSize` for each node.
 
 - Provide custom `ingressClassName` (e.g. haproxy...)
 
-- Select desired RavenDB image tag. It is `latest` by default, but we don't recommend keeping it on production (due to its' floating nature), [tags on DockerHub](https://hub.docker.com/r/ravendb/ravendb/tags)
+- Select desired RavenDB image tag. It is `latest` by default, but we don't recommend using this tag on production (due to its floating nature), [tags on DockerHub](https://hub.docker.com/r/ravendb/ravendb/tags)
 
 - In some cases you might want to edit [image pull policy](https://kubernetes.io/docs/concepts/containers/images/#image-pull-policy).
 
-- If you need some environmental values inside the RavenDB container, you can define them in the `environment` map.
+- If you need to put environment variables on your RavenDB container, you can define them in the `environment` map.
 
-### Example values.yaml
+##### Example values.yaml
 
 ```yaml
 # customizable
@@ -72,16 +77,14 @@ environment:
   SOME_ENV_VALUE: 'foo'
   SOME_OTHER_ENV_VALUE: 'bar'
 ```
- 
-## Set up your ingress controller
+
+#### Set up your ingress controller
 
 It must be able to **passthrough SSL** like Nginx/HAProxy.
 
-
-### NGINX
+##### NGINX
 
 Use `--enable-ssl-passthrough` option.
-
 
 If you've deployed k8s nginx before, its dependencies are frequently stored in the 'ingress-nginx' namespace.
 You can deploy nginx to k8s using the `nginx-ingress-ravendb.yaml` file located in the misc folder, which is preconfigured for default nodes/tags/ports and secured connection.
@@ -92,7 +95,7 @@ If you want to configure it manually, make sure that...
 - ... port 38888 (or your own ServerUrl_Tcp port) is exposed on the nginx controller pod
 - ... --enable-ssl-passthrough is set (when working with secured cluster)
 
-### HAProxy, Traefik and others
+##### HAProxy, Traefik and others
 
 Change the `ingressClassName` in the `values.yaml`, enter your deployed ingress class name.
 
@@ -103,12 +106,33 @@ e.g. `ingressClassName: haproxy`
 https://doc.traefik.io/traefik/routing/routers/#passthrough
 
 https://serversforhackers.com/c/using-ssl-certificates-with-haproxy
+ 
+### Installation
 
+**via [artifacthub.io](https://artifacthub.io/packages/helm/ravendb-cluster/ravendb)**
+
+```
+helm repo add ravendb https://ravendb.github.io/helm-charts/charts
+
+helm install [your-custom-name] ravendb/ravendb-cluster --set-file package=[setup/package/path] -f [values/yaml/path]
+```
+
+or by *cloning* the repo
+
+```
+git clone https://github.com/ravendb/helm-charts.git
+
+helm install [name] [chart path] --set-file package=[setup/package/path] -f [values/yaml/path]
+```
+
+The chart is located under the `charts/ravendb-cluster` directory.
 
 ## Rolling updates
 
 You can perform rolling update using the `rolling-update.sh` script located in the `/scripts` directory. Provide desired RavenDB image tag from the DockerHub https://hub.docker.com/r/ravendb/ravendb/tags as the first arg and path to the Helm chart as the second.
 
-`./rolling-update.sh latest ~/ravendb-cluster`
+```
+./rolling-update.sh latest ~/ravendb-cluster
+```
 
 It'll execute rolling update strategy and update your pods image tags.
